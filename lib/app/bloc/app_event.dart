@@ -4,34 +4,44 @@ abstract class AppEvent extends Equatable {
   const AppEvent();
 
   @override
-  List<Object> get props => [];
+  List<Object?> get props => [];
 }
 
-class AppInitEvent extends AppEvent {
-  const AppInitEvent();
+class InitAppEvent extends AppEvent {
+  const InitAppEvent();
 }
 
-class AppFetchEvent extends AppEvent {
-  const AppFetchEvent();
+class FetchAppEvent extends AppEvent {
+  const FetchAppEvent();
 }
 
-class AppMoveMeEvent extends AppEvent {
-  const AppMoveMeEvent();
+class MyLocationAppEvent extends AppEvent {
+  const MyLocationAppEvent();
 }
 
-class AppMoveEvent extends AppEvent {
-  final LatLng center;
+class CameraAppEvent extends AppEvent {
+  final LatLng point;
+  final double? zoom;
 
-  const AppMoveEvent(this.center);
+  const CameraAppEvent({required this.point, this.zoom});
 
   @override
-  List<Object> get props => [center];
+  List<Object?> get props => [point, zoom];
 }
 
-class AppZoomInEvent extends AppEvent {
-  const AppZoomInEvent();
+class ShowTerminalAppEvent extends AppEvent {
+  final NuvizaTerminal terminal;
+  const ShowTerminalAppEvent(this.terminal);
+
+  @override
+  List<Object?> get props => [terminal];
 }
 
-class AppZoomOutEvent extends AppEvent {
-  const AppZoomOutEvent();
+class ZoomAppEvent extends AppEvent {
+  final double zoom;
+
+  const ZoomAppEvent(this.zoom);
+
+  @override
+  List<Object?> get props => [zoom];
 }

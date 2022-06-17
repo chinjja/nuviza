@@ -10,10 +10,10 @@ class NuvizaRepository {
       : nuviza = nuviza ?? NuvizaApi(),
         geo = geo ?? GeoApi();
 
-  Future<List<NuvizaTerminal>> get terminals async {
+  Future<List<NuvizaTerminal>> fetchTerminals() async {
     final data = await nuviza.get(perPage: 1000);
     final location = await geo.location;
-    return data.data.map((e) {
+    final list = data.data.map((e) {
       final dist = geo.distance(location.latLng, e.latLng);
       return NuvizaTerminal(
         address: e.address,
@@ -28,9 +28,11 @@ class NuvizaRepository {
         distance: dist,
       );
     }).toList();
+    list.sort();
+    return list;
   }
 
-  Future<Location> get location => geo.location;
+  Future<Location> fetchLocation() => geo.location;
 
   Stream<Location> get onLocation => geo.onLocation;
 }
