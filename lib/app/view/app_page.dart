@@ -125,11 +125,13 @@ class _MapViewState extends State<MapView> {
                   ]),
                 ],
                 nonRotatedChildren: const [
-                  Padding(
-                    padding: EdgeInsets.all(8),
-                    child: Align(
-                      alignment: Alignment.bottomRight,
-                      child: ControlView(),
+                  SafeArea(
+                    child: Padding(
+                      padding: EdgeInsets.all(8),
+                      child: Align(
+                        alignment: Alignment.bottomRight,
+                        child: ControlView(),
+                      ),
                     ),
                   ),
                 ],
@@ -148,6 +150,8 @@ class _MapViewState extends State<MapView> {
     return Marker(
       width: 150,
       height: 100,
+      rotate: true,
+      rotateAlignment: Alignment.bottomCenter,
       anchorPos: AnchorPos.align(AnchorAlign.top),
       point: terminal.latLng,
       builder: (ctx) => Align(
