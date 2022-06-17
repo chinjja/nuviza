@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:nuviza/app/bloc/app_bloc.dart';
@@ -16,7 +17,7 @@ class App extends StatelessWidget {
       child: MaterialApp(
         theme: ThemeData(
           useMaterial3: true,
-          colorScheme: const ColorScheme.light(tertiary: Colors.blue),
+          colorScheme: ColorScheme.fromSwatch(),
         ),
         home: const AppView(),
       ),
@@ -32,6 +33,8 @@ class AppView extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Colors.transparent,
+        elevation: 0,
+        systemOverlayStyle: SystemUiOverlayStyle.dark,
       ),
       extendBodyBehindAppBar: true,
       body: BlocBuilder<AppBloc, AppState>(
@@ -79,7 +82,11 @@ class _MapViewState extends State<MapView> {
     return BlocConsumer<AppBloc, AppState>(
       listener: (context, state) {
         if (state is AppCameraChanged) {
-          controller.move(state.point, state.zoom ?? controller.zoom);
+          controller.moveAndRotate(
+            state.point,
+            state.zoom ?? controller.zoom,
+            0,
+          );
         }
       },
       builder: (context, state) {
@@ -113,13 +120,13 @@ class _MapViewState extends State<MapView> {
                     CircleMarker(
                       point: state.location.latLng,
                       radius: 8,
-                      color: Theme.of(context).colorScheme.tertiary,
+                      color: Theme.of(context).colorScheme.primary,
                     ),
                     CircleMarker(
                       point: state.location.latLng,
                       radius: state.location.accuracy,
                       color:
-                          Theme.of(context).colorScheme.tertiary.withAlpha(50),
+                          Theme.of(context).colorScheme.primary.withAlpha(50),
                       useRadiusInMeter: true,
                     ),
                   ]),
@@ -147,6 +154,8 @@ class _MapViewState extends State<MapView> {
 
   Marker _terminalMarker(
       NuvizaTerminal terminal, bool showInfomation, bool showRemaining) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final ts = TextStyle(color: colorScheme.onSurface);
     return Marker(
       width: 150,
       height: 100,
@@ -163,18 +172,27 @@ class _MapViewState extends State<MapView> {
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 2),
                 decoration: BoxDecoration(
-                  color:
-                      Theme.of(context).colorScheme.background.withAlpha(140),
+                  color: colorScheme.surface.withAlpha(160),
                   border: Border.all(),
                   borderRadius: const BorderRadius.all(Radius.circular(5)),
                 ),
                 child: Column(
                   children: [
                     if (showInfomation)
-                      Text(terminal.name, overflow: TextOverflow.ellipsis),
+                      Text(
+                        terminal.name,
+                        overflow: TextOverflow.ellipsis,
+                        style: ts,
+                      ),
                     if (showInfomation)
-                      Text('${terminal.distance.toStringAsFixed(1)}m'),
-                    Text('보관대수: ${terminal.remaining}'),
+                      Text(
+                        '${terminal.distance.toStringAsFixed(1)}m',
+                        style: ts,
+                      ),
+                    Text(
+                      '보관대수: ${terminal.remaining}',
+                      style: ts,
+                    ),
                   ],
                 ),
               ),
@@ -226,16 +244,22 @@ class DrawerView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final top = MediaQuery.of(context).viewPadding.top;
+    final viewPadding = MediaQuery.of(context).viewPadding;
     return Padding(
-      padding: EdgeInsets.only(top: top),
+      padding: EdgeInsets.only(top: viewPadding.top),
       child: Column(
         children: [
           Padding(
             padding: const EdgeInsets.all(8),
-            child: Text(
-              '누비자 정류장',
-              style: Theme.of(context).textTheme.titleLarge,
+            child: Row(
+              children: [
+                const Icon(Icons.directions_bus),
+                const SizedBox(width: 8),
+                Text(
+                  '누비자 정류장',
+                  style: Theme.of(context).textTheme.titleLarge,
+                ),
+              ],
             ),
           ),
           const Divider(),
@@ -244,6 +268,7 @@ class DrawerView extends StatelessWidget {
               builder: (context, state) {
                 if (state is AppLoaded) {
                   return ListView.builder(
+                    padding: EdgeInsets.only(bottom: viewPadding.bottom),
                     itemCount: state.data.length,
                     itemBuilder: (context, index) {
                       final terminal = state.data[index];

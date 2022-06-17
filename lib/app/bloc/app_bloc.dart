@@ -11,7 +11,7 @@ part 'app_event.dart';
 part 'app_state.dart';
 
 class AppBloc extends Bloc<AppEvent, AppState> {
-  static const defaultZoom = 16.0;
+  static const defaultZoom = 16.5;
 
   final NuvizaRepository repo;
   AppBloc(this.repo) : super(AppInitial()) {
@@ -24,7 +24,6 @@ class AppBloc extends Bloc<AppEvent, AppState> {
           data: data,
           location: location,
         ));
-        add(const FetchAppEvent());
         await emit.forEach(
             repo.onLocation
                 .throttleTime(const Duration(seconds: 5))
@@ -34,7 +33,11 @@ class AppBloc extends Bloc<AppEvent, AppState> {
                     )), onData: (Tuple2<Location, List<NuvizaTerminal>> data) {
           final state = this.state;
           if (state is AppLoaded) {
-            return state.copyWith(location: data.item1, data: data.item2);
+            return state.copyWith(
+              status: AppStatus.success,
+              location: data.item1,
+              data: data.item2,
+            );
           }
           return state;
         });
