@@ -17,11 +17,31 @@ class App extends StatelessWidget {
       child: MaterialApp(
         theme: ThemeData(
           useMaterial3: true,
-          colorScheme: ColorScheme.fromSwatch(),
+          colorScheme: ColorScheme.fromSeed(seedColor: Colors.blue),
+          extensions: const [LocationTheme()],
         ),
         home: const AppView(),
       ),
     );
+  }
+}
+
+class LocationTheme extends ThemeExtension<LocationTheme> {
+  final Color location;
+
+  const LocationTheme({this.location = Colors.blue});
+
+  @override
+  ThemeExtension<LocationTheme> copyWith() {
+    return LocationTheme(location: location);
+  }
+
+  @override
+  ThemeExtension<LocationTheme> lerp(
+      ThemeExtension<LocationTheme>? other, double t) {
+    if (other is! LocationTheme) return this;
+    return LocationTheme(
+        location: Color.lerp(location, other.location, t) ?? location);
   }
 }
 
@@ -79,6 +99,7 @@ class _MapViewState extends State<MapView> {
 
   @override
   Widget build(BuildContext context) {
+    final locationTheme = Theme.of(context).extension<LocationTheme>()!;
     return BlocConsumer<AppBloc, AppState>(
       listener: (context, state) {
         if (state is AppCameraChanged) {
@@ -120,13 +141,12 @@ class _MapViewState extends State<MapView> {
                     CircleMarker(
                       point: state.location.latLng,
                       radius: 8,
-                      color: Theme.of(context).colorScheme.primary,
+                      color: locationTheme.location,
                     ),
                     CircleMarker(
                       point: state.location.latLng,
                       radius: state.location.accuracy,
-                      color:
-                          Theme.of(context).colorScheme.primary.withAlpha(50),
+                      color: locationTheme.location.withAlpha(50),
                       useRadiusInMeter: true,
                     ),
                   ]),
@@ -225,12 +245,12 @@ class ControlView extends StatelessWidget {
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-        ElevatedButton(
+        FloatingActionButton(
           onPressed: () => bloc.add(const FetchAppEvent()),
           child: const Icon(Icons.refresh),
         ),
         const SizedBox(height: 8),
-        ElevatedButton(
+        FloatingActionButton(
           onPressed: () => bloc.add(const MyLocationAppEvent()),
           child: const Icon(Icons.my_location),
         ),
